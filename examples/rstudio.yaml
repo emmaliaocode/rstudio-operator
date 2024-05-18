@@ -1,0 +1,6 @@
+apiVersion: emmaliaocode.dev/v1
+kind: Rstudio
+metadata:
+  name: example
+spec:
+  image: rocker/rstudio:4.4.0
