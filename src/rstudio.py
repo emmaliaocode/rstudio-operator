@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Dict
 
 import kopf
 import yaml
@@ -8,36 +9,65 @@ from client import KubernetesClient
 
 
 class PrepareApiData:
+    """Prepare data for kubernetes api requests to create rstudio-related resources
+
+    Args:
+        name (str): the name of the rstudio custom resource
+    """
 
     def __init__(self, name: str):
 
         self._tmpl_path: Path = Path(os.path.dirname(__file__)) / "resources"
         self.name: str = name
 
-    def read_template(self, file_name: str):
+    def read_template(self, file_name: str) -> str:
+        """Read the specific template yaml from `self._tmpl_path`
+
+        Args:
+            file_name (str): the file name of the template yaml
+
+        Returns:
+            str: the content of the template yaml
+        """
 
         path: Path = self._tmpl_path / file_name
         tmpl: str = open(path, "rt").read()
 
         return tmpl
 
-    def replace_template_values(self, tmpl: str, **kwargs):
+    def generate_api_data(self, tmpl_file_name: str, **kwargs) -> str:
+        """Replace values in the template yaml with name and keyword arguments and
+        generate data for kubernetes api requests
 
-        replaced: str = tmpl.format(name=self.name, **kwargs)
-        text: str = yaml.safe_load(replaced)
+        Args:
+            tmpl_file_name (str): the file name of the template yaml
+            **image (str): the image parameter defined in rstudio yaml
 
-        return text
-
-    def generate_api_data(self, tmpl_file_name: str, **kwargs):
+        Returns:
+            str: the content of the template yaml with user-defined values replaced
+        """
 
         tmpl: str = self.read_template(tmpl_file_name)
-        data: str = self.replace_template_values(tmpl, **kwargs)
+        replaced: str = tmpl.format(name=self.name, **kwargs)
+        data: str = yaml.safe_load(replaced)
 
         return data
 
 
 @kopf.on.create("rstudios")
-def create_fn(spec, name, namespace, logger, **kwargs):
+def create_fn(spec, name, namespace, logger, **kwargs) -> Dict:
+    """Handler function that is called when a new rstudio custom resource is created
+
+    Args:
+        spec (dict): the specification part of the custom resource
+        name (str): the name of the custom resource
+        namespace (str): the namespace in which the custom resource is created
+        logger (kopf.Logger): the logger instance for logging within the handler
+        **kwargs: arbitrary keyword arguments
+
+    Returns:
+        dict: a dictionary representing the result of the creation process
+    """
 
     image: str = spec.get("image")
 
