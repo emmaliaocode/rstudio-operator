@@ -2,6 +2,7 @@ from kubernetes.client import AppsV1Api, CoreV1Api
 
 
 class KubernetesClient:
+    """Manage the Kubernetes clients"""
 
     def __init__(self):
 

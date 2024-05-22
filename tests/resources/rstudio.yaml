@@ -1,0 +1,7 @@
+apiVersion: emmaliaocode.dev/v1
+kind: Rstudio
+metadata:
+  name: test
+spec:
+  image: rocker/rstudio:4.4.0
+  imagePullPolicy: Always
