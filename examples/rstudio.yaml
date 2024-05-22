@@ -4,3 +4,4 @@ metadata:
   name: example
 spec:
   image: rocker/rstudio:4.4.0
+  imagePullPolicy: Always
