@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rstudio-operator-controller-deployment
+  namespace: "{namespace}"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: rstudio-operator-controller
+  template:
+    metadata:
+      labels:
+        app: rstudio-operator-controller
+    spec:
+      serviceAccountName: rstudio-operator-serviceaccount
+      containers:
+      - name: rstudio-operator-controller
+        image: emmaliaocode/rstudio-operator-controller:v0.1.0
