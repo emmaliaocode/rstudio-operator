@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: '{name}-rstudio-deployment'
+  name: "{name}-rstudio"
   labels:
     app: rstudio
-    rstudio: '{name}'
+    rstudio: "{name}"
 spec:
   selector:
     matchLabels:
       app: rstudio
-      rstudio: '{name}'
+      rstudio: "{name}"
   template:
     metadata:
       labels:
         app: rstudio
-        rstudio: '{name}'
+        rstudio: "{name}"
     spec:
       containers:
       - name: rstudio
-        image: '{image}'
-        imagePullPolicy: '{image_pull_policy}'
+        image: "{image}"
+        imagePullPolicy: "{image_pull_policy}"
         ports:
         - containerPort: 8787
