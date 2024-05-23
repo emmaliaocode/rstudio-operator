@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import pytest
 from pytest import MonkeyPatch
 
-from src.rstudio import PrepareApiData
+from src.preparation import PrepareApiData
 
 
 class TestPrepareApiData:
@@ -25,13 +25,13 @@ class TestPrepareApiData:
         result: str = prepare_api_data.read_template(file_name="fake.yaml")
 
         # Then
-        assert result == "fake: fake\nname: '{name}'"
+        assert result == "fake: fake\nname: '{name}'\n"
 
     def test_generate_api_data(
         self, monkeypatch: MonkeyPatch, prepare_api_data: PrepareApiData
     ):
         # Given
-        fake_tmpl: str = "fake: fake\nname: '{name}'"
+        fake_tmpl: str = "fake: fake\nname: '{name}'\n"
         mock_read_template: Mock = Mock(return_value=fake_tmpl)
         monkeypatch.setattr(PrepareApiData, "read_template", mock_read_template)
 

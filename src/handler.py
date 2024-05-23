@@ -10,7 +10,7 @@ from preparation import PrepareApiData
 
 
 @kopf.on.create("rstudios")
-def create_fn(spec: Dict, name: str, namespace: str, logger: Logger, **kwargs) -> Dict:
+def create_fn(spec: Dict, name: str, namespace: str, logger: Logger, **_) -> Dict:
     """Handler function that is called when a new rstudio custom resource is created
 
     Args:
@@ -35,14 +35,15 @@ def create_fn(spec: Dict, name: str, namespace: str, logger: Logger, **kwargs) -
         image=image,
         image_pull_policy=image_pull_policy,
     )
+    svc_api_data: Dict = api_data.generate_api_data(tmpl_file_name="service.yaml")
+
     kopf.adopt(deploy_api_data)
+    kopf.adopt(svc_api_data)
+
     _: V1Deployment = k8s_client.app_v1_api.create_namespaced_deployment(
         namespace=namespace,
         body=deploy_api_data,
     )
-
-    svc_api_data: Dict = api_data.generate_api_data(tmpl_file_name="service.yaml")
-    kopf.adopt(svc_api_data)
     _: V1Service = k8s_client.core_v1_api.create_namespaced_service(
         namespace=namespace,
         body=svc_api_data,
@@ -50,4 +51,4 @@ def create_fn(spec: Dict, name: str, namespace: str, logger: Logger, **kwargs) -
 
     logger.info(f"`{name}` Deployment and Service childs are created.")
 
-    return {"deployment-image": image}
+    return {"rstudio-image": image}

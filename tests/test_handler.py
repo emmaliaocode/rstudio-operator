@@ -10,8 +10,8 @@ from kopf.testing import KopfRunner
 from kubernetes.client import AppsV1Api, CoreV1Api
 from pytest import LogCaptureFixture, MonkeyPatch
 
-from src import rstudio
-from src.rstudio import PrepareApiData
+from src import handler
+from src.preparation import PrepareApiData
 
 
 def test_create_fn(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):
@@ -30,7 +30,7 @@ def test_create_fn(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):
 
     # When
     with caplog.at_level(logging.INFO):
-        result: Dict = rstudio.create_fn(
+        result: Dict = handler.create_fn(
             spec={"image": "test", "image_pull_policy": "test"},
             name="test",
             namespace="test",
@@ -42,7 +42,7 @@ def test_create_fn(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):
     assert mock_adopt.call_count == 2
     mock_create_deploy.assert_called_once()
     mock_create_svc.assert_called_once()
-    assert result == {"deployment-image": "test"}
+    assert result == {"rstudio-image": "test"}
     assert "`test` Deployment and Service childs are created." in caplog.records[0].msg
 
 
@@ -51,7 +51,7 @@ def test_integration_create_fn():
     """Test the kopf operator by creating rstudio object"""
 
     # When
-    with KopfRunner(["run", "src/rstudio.py", "--verbose"]) as runner:
+    with KopfRunner(["run", "src/handler.py", "--verbose"]) as runner:
 
         subprocess.run(
             "kubectl apply -f tests/resources/rstudio.yaml", shell=True, check=True
