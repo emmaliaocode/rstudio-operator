@@ -5,12 +5,12 @@ from kopf import Logger
 from kubernetes.client.models.v1_deployment import V1Deployment
 from kubernetes.client.models.v1_service import V1Service
 
+from builder import BuildApiData
 from client import KubernetesClient
-from preparation import PrepareApiData
 
 
 @kopf.on.create("rstudios")
-def create_fn(spec: Dict, name: str, namespace: str, logger: Logger, **_) -> Dict:
+def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dict:
     """Handler function that is called when a new rstudio custom resource is created
 
     Args:
@@ -24,18 +24,13 @@ def create_fn(spec: Dict, name: str, namespace: str, logger: Logger, **_) -> Dic
         dict: a dictionary representing the result of the creation process
     """
 
-    image: str = spec.get("image")
-    image_pull_policy: str = spec.get("imagePullPolicy")
+    rstudio_image: str = spec.get("image")
 
-    api_data: PrepareApiData = PrepareApiData(name=name)
+    api_data: BuildApiData = BuildApiData(name=name, spec=spec)
     k8s_client = KubernetesClient()
 
-    deploy_api_data: Dict = api_data.generate_api_data(
-        tmpl_file_name="deployment.yaml",
-        image=image,
-        image_pull_policy=image_pull_policy,
-    )
-    svc_api_data: Dict = api_data.generate_api_data(tmpl_file_name="service.yaml")
+    deploy_api_data: Dict = api_data.generate_api_data(tmpl_file="deployment.yaml")
+    svc_api_data: Dict = api_data.generate_api_data(tmpl_file="service.yaml")
 
     kopf.adopt(deploy_api_data)
     kopf.adopt(svc_api_data)
@@ -51,4 +46,4 @@ def create_fn(spec: Dict, name: str, namespace: str, logger: Logger, **_) -> Dic
 
     logger.info(f"`{name}` Deployment and Service childs are created.")
 
-    return {"rstudio-image": image}
+    return {"rstudio-image": rstudio_image}

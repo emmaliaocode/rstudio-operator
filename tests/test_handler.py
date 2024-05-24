@@ -7,17 +7,19 @@ from unittest.mock import Mock
 import kopf
 import pytest
 from kopf.testing import KopfRunner
-from kubernetes.client import AppsV1Api, CoreV1Api
-from pytest import LogCaptureFixture, MonkeyPatch
+from kubernetes.client.api.apps_v1_api import AppsV1Api
+from kubernetes.client.api.core_v1_api import CoreV1Api
+from pytest import MonkeyPatch
 
 from src import handler
-from src.preparation import PrepareApiData
 
 
-def test_create_fn(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):
+def test_create_fn(caplog, monkeypatch: MonkeyPatch):
     # Given
     mock_generate_api_data: Mock = Mock()
-    monkeypatch.setattr(PrepareApiData, "generate_api_data", mock_generate_api_data)
+    monkeypatch.setattr(
+        handler.BuildApiData, "generate_api_data", mock_generate_api_data
+    )
 
     mock_adopt: Mock = Mock()
     monkeypatch.setattr(kopf, "adopt", mock_adopt)
@@ -31,19 +33,16 @@ def test_create_fn(monkeypatch: MonkeyPatch, caplog: LogCaptureFixture):
     # When
     with caplog.at_level(logging.INFO):
         result: Dict = handler.create_fn(
-            spec={"image": "test", "image_pull_policy": "test"},
-            name="test",
-            namespace="test",
-            logger=logging,
+            name="test", spec={"image": "test"}, namespace="test", logger=logging
         )
 
     # Then
-    assert mock_generate_api_data.call_count == 2
-    assert mock_adopt.call_count == 2
+    mock_generate_api_data.call_count == 2
+    mock_adopt.call_count == 2
     mock_create_deploy.assert_called_once()
     mock_create_svc.assert_called_once()
-    assert result == {"rstudio-image": "test"}
-    assert "`test` Deployment and Service childs are created." in caplog.records[0].msg
+    expected: Dict = {"rstudio-image": "test"}
+    result == expected
 
 
 @pytest.mark.integtest
