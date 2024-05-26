@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{name}-rstudio"
+  name: "{name}-rstudio-deployment"
   labels:
-    app: rstudio
+    component: rstudio
     rstudio: "{name}"
 spec:
   selector:
     matchLabels:
-      app: rstudio
+      component: rstudio
       rstudio: "{name}"
   template:
     metadata:
       labels:
-        app: rstudio
+        component: rstudio
         rstudio: "{name}"
     spec:
       containers:
