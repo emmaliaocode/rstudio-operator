@@ -2,6 +2,8 @@ apiVersion: emmaliaocode.dev/v1
 kind: Rstudio
 metadata:
   name: example
+  namespace: default
 spec:
-  image: rocker/rstudio:4.4.0
-  imagePullPolicy: Always
+  image: rocker/rstudio:latest
+  imagePullPolicy: IfNotPresent
+  loginPassword: cGFzc3dvcmQxMjMK

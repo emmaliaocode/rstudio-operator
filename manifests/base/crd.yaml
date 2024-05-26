@@ -35,8 +35,12 @@ spec:
                 - Always
                 - IfNotPresent
                 - Never
+              loginPassword:
+                description: Password with Base64 encoded for login to RStudio.
+                type: string
             required:
             - image
+            - loginPassword
           status:
             description: Status and results of the rstudio resource.
             x-kubernetes-preserve-unknown-fields: true

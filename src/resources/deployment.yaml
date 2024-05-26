@@ -22,3 +22,9 @@ spec:
         imagePullPolicy: "{imagePullPolicy}"
         ports:
         - containerPort: 8787
+        env:
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: "{name}-rstudio-secret"
+              key: loginPassword

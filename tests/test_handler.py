@@ -30,6 +30,9 @@ def test_create_fn(caplog, monkeypatch: MonkeyPatch):
     mock_create_svc: Mock = Mock()
     monkeypatch.setattr(CoreV1Api, "create_namespaced_service", mock_create_svc)
 
+    mock_create_secret: Mock = Mock()
+    monkeypatch.setattr(CoreV1Api, "create_namespaced_secret", mock_create_secret)
+
     # When
     with caplog.at_level(logging.INFO):
         result: Dict = handler.create_fn(
@@ -37,10 +40,11 @@ def test_create_fn(caplog, monkeypatch: MonkeyPatch):
         )
 
     # Then
-    mock_generate_api_data.call_count == 2
-    mock_adopt.call_count == 2
+    mock_generate_api_data.call_count == 3
+    mock_adopt.call_count == 3
     mock_create_deploy.assert_called_once()
     mock_create_svc.assert_called_once()
+    mock_create_secret.assert_called_once()
     expected: Dict = {"rstudio-image": "test"}
     result == expected
 
@@ -65,4 +69,5 @@ def test_integration_create_fn():
     # Then
     assert runner.exit_code == 0
     assert runner.exception is None
-    assert "`test` Deployment and Service childs are created." in runner.stdout
+    print(runner.stdout)
+    assert "`test` Deployment, Secret and Service childs are created." in runner.stdout
