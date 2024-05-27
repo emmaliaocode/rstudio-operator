@@ -7,3 +7,4 @@ spec:
   image: rocker/rstudio:latest
   imagePullPolicy: IfNotPresent
   loginPassword: cGFzc3dvcmQxMjMK
+  isRoot: true
