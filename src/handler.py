@@ -1,7 +1,9 @@
+import json
 from typing import Dict
 
 import kopf
-from kopf import Logger
+from kopf import Logger, PermanentError
+from kubernetes.client.exceptions import ApiException
 from kubernetes.client.models.v1_deployment import V1Deployment
 from kubernetes.client.models.v1_secret import V1Secret
 from kubernetes.client.models.v1_service import V1Service
@@ -38,18 +40,26 @@ def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dic
     kopf.adopt(svc_api_data)
     kopf.adopt(secret_api_data)
 
-    _: V1Deployment = k8s_client.app_v1_api.create_namespaced_deployment(
-        namespace=namespace,
-        body=deploy_api_data,
-    )
-    _: V1Service = k8s_client.core_v1_api.create_namespaced_service(
-        namespace=namespace,
-        body=svc_api_data,
-    )
-    _: V1Secret = k8s_client.core_v1_api.create_namespaced_secret(
-        namespace=namespace, body=secret_api_data
-    )
+    try:
+        _: V1Deployment = k8s_client.app_v1_api.create_namespaced_deployment(
+            namespace=namespace,
+            body=deploy_api_data,
+        )
+        _: V1Service = k8s_client.core_v1_api.create_namespaced_service(
+            namespace=namespace,
+            body=svc_api_data,
+        )
+        _: V1Secret = k8s_client.core_v1_api.create_namespaced_secret(
+            namespace=namespace, body=secret_api_data
+        )
 
-    logger.info(f"`{name}` Deployment, Secret and Service childs are created.")
+        logger.info(f"`{name}` Deployment, Secret and Service childs are created.")
 
-    return {"rstudio-image": rstudio_image}
+        return {"rstudio-image": rstudio_image}
+
+    except ApiException as e:
+        if e.reason == "Conflict":
+            res: Dict = json.loads(e.body)
+            raise PermanentError(res["message"])
+        else:
+            raise PermanentError(e)

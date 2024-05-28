@@ -6,6 +6,7 @@ from unittest.mock import Mock
 
 import kopf
 import pytest
+from kopf import PermanentError
 from kopf.testing import KopfRunner
 from kubernetes.client.api.apps_v1_api import AppsV1Api
 from kubernetes.client.api.core_v1_api import CoreV1Api
@@ -14,7 +15,7 @@ from pytest import MonkeyPatch
 from src import handler
 
 
-def test_create_fn(caplog, monkeypatch: MonkeyPatch):
+def test_create_fn_expect_succeeded(caplog, monkeypatch: MonkeyPatch):
     # Given
     mock_generate_api_data: Mock = Mock()
     monkeypatch.setattr(
@@ -45,13 +46,48 @@ def test_create_fn(caplog, monkeypatch: MonkeyPatch):
     mock_create_deploy.assert_called_once()
     mock_create_svc.assert_called_once()
     mock_create_secret.assert_called_once()
-    expected: Dict = {"rstudio-image": "test"}
-    result == expected
+    assert "`test` Deployment, Secret and Service childs are created." in caplog.text
+    assert result == {"rstudio-image": "test"}
+
+
+def test_create_fn_expect_failed_when_k8s_api_create_objects(
+    caplog, monkeypatch: MonkeyPatch
+):
+    # Given
+    mock_generate_api_data: Mock = Mock()
+    monkeypatch.setattr(
+        handler.BuildApiData, "generate_api_data", mock_generate_api_data
+    )
+
+    mock_adopt: Mock = Mock()
+    monkeypatch.setattr(kopf, "adopt", mock_adopt)
+
+    mock_create_objects: Mock = Mock(side_effect=PermanentError())
+    monkeypatch.setattr(AppsV1Api, "create_namespaced_deployment", mock_create_objects)
+
+    # When
+    with caplog.at_level(logging.INFO):
+        with pytest.raises(PermanentError):
+            handler.create_fn(
+                name="test", spec={"image": "test"}, namespace="test", logger=logging
+            )
+
+    # Then
+    mock_generate_api_data.call_count == 3
+    mock_adopt.call_count == 3
+    mock_create_objects.assert_called_once()
+    assert (
+        "`test` Deployment, Secret and Service childs are created." not in caplog.text
+    )
 
 
 @pytest.mark.integtest
 def test_integration_create_fn():
-    """Test the kopf operator by creating rstudio object"""
+    """Test the kopf operator by actually creating an rstudio object
+
+    Pre-deployed Rstudio Operator should be temporarily shut-down
+    before running this test to avoid conflict
+    """
 
     # When
     with KopfRunner(["run", "src/handler.py", "--verbose"]) as runner:
@@ -69,5 +105,4 @@ def test_integration_create_fn():
     # Then
     assert runner.exit_code == 0
     assert runner.exception is None
-    print(runner.stdout)
     assert "`test` Deployment, Secret and Service childs are created." in runner.stdout
