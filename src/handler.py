@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, List
 
 import kopf
 from kopf import Logger, PermanentError
@@ -29,28 +29,30 @@ def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dic
 
     rstudio_image: str = spec.get("image")
 
-    api_data: BuildApiData = BuildApiData(name=name, spec=spec)
+    build_api_data: BuildApiData = BuildApiData(name=name, spec=spec)
     k8s_client = KubernetesClient()
 
-    deploy_api_data: Dict = api_data.generate_api_data(tmpl_file="deployment.yaml")
-    svc_api_data: Dict = api_data.generate_api_data(tmpl_file="service.yaml")
-    secret_api_data: Dict = api_data.generate_api_data(tmpl_file="secret.yaml")
+    tmpls: List = ["deployment.yaml.j2", "service.yaml.j2", "secret.yaml.j2"]
 
-    kopf.adopt(deploy_api_data)
-    kopf.adopt(svc_api_data)
-    kopf.adopt(secret_api_data)
+    api_data: Dict = {}
+
+    for tmpl in tmpls:
+        key: str = str(tmpl).rsplit(".")[0]
+        val: Dict = build_api_data.generate_api_data(tmpl)
+        kopf.adopt(val)
+        api_data.update({key: val})
 
     try:
         _: V1Deployment = k8s_client.app_v1_api.create_namespaced_deployment(
             namespace=namespace,
-            body=deploy_api_data,
+            body=api_data["deployment"],
         )
         _: V1Service = k8s_client.core_v1_api.create_namespaced_service(
             namespace=namespace,
-            body=svc_api_data,
+            body=api_data["service"],
         )
         _: V1Secret = k8s_client.core_v1_api.create_namespaced_secret(
-            namespace=namespace, body=secret_api_data
+            namespace=namespace, body=api_data["secret"]
         )
 
         logger.info(f"`{name}` Deployment, Secret and Service childs are created.")

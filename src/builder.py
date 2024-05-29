@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import Dict
 
 import yaml
+from jinja2 import Environment, FileSystemLoader, Template
 
 
 class BuildApiData:
-    """Prepare data for kubernetes api requests to create rstudio-related resources
+    """Prepare data for kubernetes api data to create rstudio-related resources
 
     Args:
         name (str): the name of the custom resource
@@ -15,76 +16,36 @@ class BuildApiData:
 
     def __init__(self, name: str, spec: Dict):
 
-        self._tmpl_path: Path = Path(os.path.dirname(__file__)) / "resources"
+        self._tmpl_dir: Path = Path(os.path.dirname(__file__)) / "resources"
         self.name: str = name
         self.spec: Dict = spec
 
-        self.parameters: Dict = {}
-
-    def get_parameters(self) -> Dict:
-        """Get parameters by retrieve_parameters function"""
-
-        params: tuple = self.retrieve_parameters(self.spec)
-
-        self.parameters = dict(params)
-
-    def retrieve_parameters(self, spec: Dict):
-        """Recursively retrieves parameters from a nested dictionary
-
-        Args:
-            spec (dict): the specification part of the custom resource
-
-        Yields:
-            tuple: a tuple containing a key and its corresponding value
-        """
-
-        for key, val in spec.items():
-            if isinstance(val, dict):
-                yield from self.retrieve_parameters(val)
-            else:
-                yield (key, val)
-
-    def read_template(self, file_name: str) -> str:
+    def render_template(self, tmpl: str) -> str:
         """Read the specific template yaml from self._tmpl_path
 
         Args:
-            file_name (str): the file name of the template yaml
+            tmpl (str): the file name of the template yaml
 
         Returns:
-            str: the content of the template yaml
+            str: the rendered yaml
         """
 
-        path: Path = self._tmpl_path / file_name
-        template: str = open(path, "rt").read()
+        env: Environment = Environment(loader=FileSystemLoader(self._tmpl_dir))
+        template: Template = env.get_template(tmpl)
 
-        return template
+        return template.render(name=self.name, spec=self.spec)
 
-    def replace_values(self, template: str) -> str:
-        """Replace values in the template yaml with parametes
-
-        Args:
-            tmpl_text (str): the content of the template yaml
-
-        Returns:
-            str: the content of the yaml
-        """
-
-        return template.format(name=self.name, **self.parameters)
-
-    def generate_api_data(self, tmpl_file: str) -> Dict:
+    def generate_api_data(self, tmpl: str) -> Dict:
         """Generate data for kubernetes api requests
 
         Args:
-            tmpl_file_name (str): the file name of the template yaml
+            tmpl (str): the file name of the template yaml
 
         Returns:
-            dict: a dictionary contains api data
+            dict: a dictionary of api data
         """
 
-        self.get_parameters()
-
-        tmpl: str = self.read_template(file_name=tmpl_file)
-        replaced: str = self.replace_values(template=tmpl)
-        data: Dict = yaml.safe_load(replaced)
+        rendered_tmpl: str = self.render_template(tmpl=tmpl)
+        data: Dict = yaml.safe_load(rendered_tmpl)
 
         return data
