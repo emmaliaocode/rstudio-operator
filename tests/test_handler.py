@@ -25,8 +25,8 @@ def test_create_fn_expect_succeeded(caplog, monkeypatch: MonkeyPatch):
     mock_adopt: Mock = Mock()
     monkeypatch.setattr(kopf, "adopt", mock_adopt)
 
-    mock_create_deploy: Mock = Mock()
-    monkeypatch.setattr(AppsV1Api, "create_namespaced_deployment", mock_create_deploy)
+    mock_create_sts: Mock = Mock()
+    monkeypatch.setattr(AppsV1Api, "create_namespaced_stateful_set", mock_create_sts)
 
     mock_create_svc: Mock = Mock()
     monkeypatch.setattr(CoreV1Api, "create_namespaced_service", mock_create_svc)
@@ -43,10 +43,10 @@ def test_create_fn_expect_succeeded(caplog, monkeypatch: MonkeyPatch):
     # Then
     mock_generate_api_data.call_count == 3
     mock_adopt.call_count == 3
-    mock_create_deploy.assert_called_once()
+    mock_create_sts.assert_called_once()
     mock_create_svc.assert_called_once()
     mock_create_secret.assert_called_once()
-    assert "`test` Deployment, Secret and Service childs are created." in caplog.text
+    assert "`test` StatefulSet, Secret and Service childs are created." in caplog.text
     assert result == {"rstudio-image": "test"}
 
 
@@ -63,7 +63,9 @@ def test_create_fn_expect_failed_when_k8s_api_create_objects(
     monkeypatch.setattr(kopf, "adopt", mock_adopt)
 
     mock_create_objects: Mock = Mock(side_effect=PermanentError())
-    monkeypatch.setattr(AppsV1Api, "create_namespaced_deployment", mock_create_objects)
+    monkeypatch.setattr(
+        AppsV1Api, "create_namespaced_stateful_set", mock_create_objects
+    )
 
     # When
     with caplog.at_level(logging.INFO):
@@ -77,7 +79,7 @@ def test_create_fn_expect_failed_when_k8s_api_create_objects(
     mock_adopt.call_count == 3
     mock_create_objects.assert_called_once()
     assert (
-        "`test` Deployment, Secret and Service childs are created." not in caplog.text
+        "`test` StatefulSet, Secret and Service childs are created." not in caplog.text
     )
 
 
@@ -105,4 +107,4 @@ def test_integration_create_fn():
     # Then
     assert runner.exit_code == 0
     assert runner.exception is None
-    assert "`test` Deployment, Secret and Service childs are created." in runner.stdout
+    assert "`test` StatefulSet, Secret and Service childs are created." in runner.stdout

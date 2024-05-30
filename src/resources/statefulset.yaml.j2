@@ -1,11 +1,13 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: {{ name }}-rstudio-deployment
+  name: {{ name }}-rstudio-statefulset
   labels:
     component: rstudio
     rstudio: {{ name }}
 spec:
+  serviceName: {{ name }}-rstudio-service
+  replicas: 1
   selector:
     matchLabels:
       component: rstudio
@@ -21,14 +23,8 @@ spec:
         image: {{ spec.image }}
         imagePullPolicy: {{ spec.imagePullPolicy }}
         ports:
-        - containerPort: 8787
-        resources:
-          requests:
-            cpu: 10m
-            memory: 1Gi
-          limits:
-            cpu: 100m
-            memory: 1Gi
+        - name: rstudio-ui
+          containerPort: 8787
         env:
         - name: PASSWORD
           valueFrom:
@@ -37,3 +33,18 @@ spec:
               key: loginPassword
         - name: ROOT
           value: "{{ spec.isRoot | string | lower }}"
+        volumeMounts:
+        - name: vol
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: vol
+    spec:
+      accessModes: ["ReadWriteMany"]
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 1Gi
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Delete
+    whenScaled: Retain

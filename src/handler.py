@@ -4,9 +4,9 @@ from typing import Dict, List
 import kopf
 from kopf import Logger, PermanentError
 from kubernetes.client.exceptions import ApiException
-from kubernetes.client.models.v1_deployment import V1Deployment
 from kubernetes.client.models.v1_secret import V1Secret
 from kubernetes.client.models.v1_service import V1Service
+from kubernetes.client.models.v1_stateful_set import V1StatefulSet
 
 from builder import BuildApiData
 from client import KubernetesClient
@@ -32,7 +32,7 @@ def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dic
     build_api_data: BuildApiData = BuildApiData(name=name, spec=spec)
     k8s_client = KubernetesClient()
 
-    tmpls: List = ["deployment.yaml.j2", "service.yaml.j2", "secret.yaml.j2"]
+    tmpls: List = ["statefulset.yaml.j2", "service.yaml.j2", "secret.yaml.j2"]
 
     api_data: Dict = {}
 
@@ -43,9 +43,9 @@ def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dic
         api_data.update({key: val})
 
     try:
-        _: V1Deployment = k8s_client.app_v1_api.create_namespaced_deployment(
+        _: V1StatefulSet = k8s_client.app_v1_api.create_namespaced_stateful_set(
             namespace=namespace,
-            body=api_data["deployment"],
+            body=api_data["statefulset"],
         )
         _: V1Service = k8s_client.core_v1_api.create_namespaced_service(
             namespace=namespace,
@@ -55,7 +55,7 @@ def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dic
             namespace=namespace, body=api_data["secret"]
         )
 
-        logger.info(f"`{name}` Deployment, Secret and Service childs are created.")
+        logger.info(f"`{name}` StatefulSet, Secret and Service childs are created.")
 
         return {"rstudio-image": rstudio_image}
 
