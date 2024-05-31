@@ -21,14 +21,14 @@ spec:
         type: object
         properties:
           spec:
-            description: Spec defines the desired state of RStudio.
+            description: "Defines the desired state of RStudio."
             type: object
             properties:
               image:
-                description: Image digest selected from DockerHub (https://hub.docker.com/r/rocker/rstudio/tags). The tag of the image refers to the R version.
+                description: "Image digest selected from DockerHub, the tag of the image refers to the R version."
                 type: string
               imagePullPolicy:
-                description: Policy of the Kubelet to pull an image, default is IfNotPresent.
+                description: "Policy of the Kubelet to pull an image, default is IfNotPresent."
                 type: string
                 default: IfNotPresent
                 enum:
@@ -36,16 +36,36 @@ spec:
                 - IfNotPresent
                 - Never
               loginPassword:
-                description: Password with Base64 encoded for login to RStudio.
+                description: "Password with Base64 encoded for login to RStudio."
                 type: string
               isRoot:
-                description: Whether the Linux system user `rstudio` should be added to the `sudoers` group during the RStudio server init process, default is False.
+                description: "Whether the Linux system user `rstudio` should be added to the `sudoers` group during the RStudio server init process, default is False."
                 type: boolean
+              resources:
+                description: "Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/. ResourceRequirements describes the compute resource requirements."
+                type: object
+                properties:
+                  requests:
+                    description: "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/. Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64() accessors."
+                    type: object
+                    properties:
+                      cpu:
+                        type: string
+                      memory:
+                        type: string
+                  limits:
+                    description: "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/. Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64() accessors."
+                    type: object
+                    properties:
+                      cpu:
+                        type: string
+                      memory:
+                        type: string
             required:
             - image
-            - loginPassword
+            - isRoot
           status:
-            description: Status and results of the rstudio resource.
+            description: "Status and results of the rstudio resource."
             x-kubernetes-preserve-unknown-fields: true
         required:
         - spec

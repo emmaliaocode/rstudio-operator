@@ -11,7 +11,7 @@ kustomize build manifests/base | kubectl apply -f -
 ```
 
 ## Usage
-Create a RStudio object.
+Create a RStudio custom resource.
 ```bash
 kubectl apply -f - <<EOF
 apiVersion: emmaliaocode.dev/v1
@@ -24,6 +24,13 @@ spec:
   imagePullPolicy: IfNotPresent
   loginPassword: cGFzc3dvcmQxMjMK
   isRoot: true
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "64Mi"
+    limits:
+      cpu: "500m"
+      memory: "128Mi"
 EOF
 ```
 ```bash
@@ -31,9 +38,15 @@ rstudio.emmaliaocode.dev/example created
 ```
 Get `example` Rstudio.
 ```bash
-kubectl get rstudio example
+kubectl get all -l rstudio=example
 ```
 ```bash
-NAME      AGE
-example   44s
+NAME                                READY   STATUS    RESTARTS   AGE
+pod/example-rstudio-statefulset-0   1/1     Running   0          15s
+
+NAME                              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/example-rstudio-service   NodePort   10.99.147.111   <none>        8787:30574/TCP   15s
+
+NAME                                           READY   AGE
+statefulset.apps/example-rstudio-statefulset   1/1     15s
 ```

@@ -25,6 +25,19 @@ spec:
         ports:
         - name: rstudio-ui
           containerPort: 8787
+        {% if spec.resources %}
+        resources:
+          {% if spec.resources.requests %}
+          requests:
+            cpu: {{ spec.resources.requests.cpu }}
+            memory: {{ spec.resources.requests.memory }}
+          {% endif %}
+          {% if spec.resources.limits %}
+          limits:
+            cpu: {{ spec.resources.limits.cpu }}
+            memory: {{ spec.resources.limits.memory }}
+          {% endif %}
+        {% endif %}
         env:
         - name: PASSWORD
           valueFrom:
