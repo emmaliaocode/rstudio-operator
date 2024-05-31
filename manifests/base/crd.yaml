@@ -35,8 +35,8 @@ spec:
                 - Always
                 - IfNotPresent
                 - Never
-              loginPassword:
-                description: "Password with Base64 encoded for login to RStudio."
+              loginSecret:
+                description: "Secret that contains a key 'password' for login to RStudio."
                 type: string
               isRoot:
                 description: "Whether the Linux system user `rstudio` should be added to the `sudoers` group during the RStudio server init process, default is False."

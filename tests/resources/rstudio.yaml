@@ -5,5 +5,12 @@ metadata:
 spec:
   image: rocker/rstudio:4.4.0
   imagePullPolicy: Always
-  loginPassword: dGVzdAo=
+  loginSecret: rstudio-secret
   isRoot: true
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "64Mi"
+    limits:
+      cpu: "500m"
+      memory: "128Mi"

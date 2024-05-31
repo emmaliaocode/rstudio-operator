@@ -4,7 +4,6 @@ from typing import Dict, List
 import kopf
 from kopf import Logger, PermanentError
 from kubernetes.client.exceptions import ApiException
-from kubernetes.client.models.v1_secret import V1Secret
 from kubernetes.client.models.v1_service import V1Service
 from kubernetes.client.models.v1_stateful_set import V1StatefulSet
 
@@ -51,11 +50,8 @@ def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dic
             namespace=namespace,
             body=api_data["service"],
         )
-        _: V1Secret = k8s_client.core_v1_api.create_namespaced_secret(
-            namespace=namespace, body=api_data["secret"]
-        )
 
-        logger.info(f"`{name}` StatefulSet, Secret and Service childs are created.")
+        logger.info(f"`{name}` StatefulSet and Service childs are created.")
 
         return {"rstudio-image": rstudio_image}
 

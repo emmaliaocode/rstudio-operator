@@ -42,8 +42,8 @@ spec:
         - name: PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ name }}-rstudio-secret
-              key: loginPassword
+              name: {{ spec.loginSecret }}
+              key: password
         - name: ROOT
           value: "{{ spec.isRoot | string | lower }}"
         volumeMounts:

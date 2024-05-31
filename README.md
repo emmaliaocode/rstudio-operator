@@ -11,6 +11,10 @@ kustomize build manifests/base | kubectl apply -f -
 ```
 
 ## Usage
+Create a password secret to login to RStudio IDE.
+```bash
+kubectl create secret generic rstudio-secret --from-literal=password=[password]
+```
 Create a RStudio custom resource.
 ```bash
 kubectl apply -f - <<EOF
@@ -22,7 +26,7 @@ metadata:
 spec:
   image: rocker/rstudio:latest
   imagePullPolicy: IfNotPresent
-  loginPassword: cGFzc3dvcmQxMjMK
+  loginSecret: rstudio-secret
   isRoot: true
   resources:
     requests:

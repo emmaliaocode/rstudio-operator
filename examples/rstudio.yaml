@@ -6,6 +6,7 @@ metadata:
 spec:
   image: rocker/rstudio:latest
   imagePullPolicy: IfNotPresent
+  loginSecret: rstudio-secret
   isRoot: true
   resources:
     requests:

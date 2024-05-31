@@ -31,9 +31,6 @@ def test_create_fn_expect_succeeded(caplog, monkeypatch: MonkeyPatch):
     mock_create_svc: Mock = Mock()
     monkeypatch.setattr(CoreV1Api, "create_namespaced_service", mock_create_svc)
 
-    mock_create_secret: Mock = Mock()
-    monkeypatch.setattr(CoreV1Api, "create_namespaced_secret", mock_create_secret)
-
     # When
     with caplog.at_level(logging.INFO):
         result: Dict = handler.create_fn(
@@ -45,8 +42,7 @@ def test_create_fn_expect_succeeded(caplog, monkeypatch: MonkeyPatch):
     mock_adopt.call_count == 3
     mock_create_sts.assert_called_once()
     mock_create_svc.assert_called_once()
-    mock_create_secret.assert_called_once()
-    assert "`test` StatefulSet, Secret and Service childs are created." in caplog.text
+    assert "`test` StatefulSet and Service childs are created." in caplog.text
     assert result == {"rstudio-image": "test"}
 
 
@@ -78,9 +74,7 @@ def test_create_fn_expect_failed_when_k8s_api_create_objects(
     mock_generate_api_data.call_count == 3
     mock_adopt.call_count == 3
     mock_create_objects.assert_called_once()
-    assert (
-        "`test` StatefulSet, Secret and Service childs are created." not in caplog.text
-    )
+    assert "`test` StatefulSet and Service childs are created." not in caplog.text
 
 
 @pytest.mark.integtest
@@ -93,7 +87,6 @@ def test_integration_create_fn():
 
     # When
     with KopfRunner(["run", "src/handler.py", "--verbose"]) as runner:
-
         subprocess.run(
             "kubectl apply -f tests/resources/rstudio.yaml", shell=True, check=True
         )
@@ -107,4 +100,4 @@ def test_integration_create_fn():
     # Then
     assert runner.exit_code == 0
     assert runner.exception is None
-    assert "`test` StatefulSet, Secret and Service childs are created." in runner.stdout
+    assert "`test` StatefulSet and Service childs are created." in runner.stdout
