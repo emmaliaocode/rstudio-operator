@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ name }}-rstudio-statefulset
+  name: {{ name }}-rstudio
   labels:
     component: rstudio
     rstudio: {{ name }}
@@ -23,7 +23,7 @@ spec:
         image: {{ spec.image }}
         imagePullPolicy: {{ spec.imagePullPolicy }}
         ports:
-        - name: rstudio-ui
+        - name: rstudio
           containerPort: 8787
         {% if spec.resources %}
         resources:
@@ -46,18 +46,21 @@ spec:
               key: password
         - name: ROOT
           value: "{{ spec.isRoot | string | lower }}"
-        volumeMounts:
-        - name: vol
-          mountPath: /data
+        volumeMounts: {{ spec.volumeMounts }}
   volumeClaimTemplates:
+  {% for item in spec.storages %}
   - metadata:
-      name: vol
+      name: {{ item.name }}
+      labels:
+        component: rstudio
+        rstudio: {{ name }}
     spec:
-      accessModes: ["ReadWriteMany"]
-      storageClassName: standard
+      storageClassName: {{ item.storageClassName }}
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ item.storageSize }}
+      accessModes: {{ item.accessModes }}
+  {% endfor %}
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: Delete
     whenScaled: Retain

@@ -35,6 +35,15 @@ spec:
     limits:
       cpu: "500m"
       memory: "128Mi"
+  storages:
+  - name: rstudio-pvc
+    storageClassName: standard
+    storageSize: "1Gi"
+    accessModes:
+    - "ReadWriteMany"
+  volumeMounts:
+  - name: rstudio-pvc
+    mountPath: /data
 EOF
 ```
 ```bash

@@ -61,6 +61,38 @@ spec:
                         type: string
                       memory:
                         type: string
+              storages:
+                description: "A list of claims that pods are allowed to reference. The StatefulSet controller is responsible for mapping network identities to claims in a way that maintains the identity of a pod. Every claim in this list must have at least one matching (by name) volumeMount."
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      description: "The name of the claim."
+                      type: string
+                    storageClassName:
+                      description: "The name of the StorageClass required by the claim."
+                      type: string
+                    storageSize:
+                      description: "The minimum resources the volume should have."
+                      type: string
+                    accessModes:
+                      description: "The desired access modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1."
+                      type: array
+                      items:
+                        type: string
+              volumeMounts:
+                description: "Pod volumes to mount into the container's filesystem. Cannot be updated. VolumeMount describes a mounting of a Volume within a container."
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      description: "This must match the Name of a Volume."
+                      type: string
+                    mountPath:
+                      description: "Path within the container at which the volume should be mounted. Must not contain ':'."
+                      type: string
             required:
             - image
             - isRoot
