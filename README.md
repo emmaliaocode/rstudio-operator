@@ -54,12 +54,12 @@ Get `example` Rstudio.
 kubectl get all -l rstudio=example
 ```
 ```bash
-NAME                                READY   STATUS    RESTARTS   AGE
-pod/example-rstudio-statefulset-0   1/1     Running   0          15s
+NAME                    READY   STATUS    RESTARTS   AGE
+pod/example-rstudio-0   1/1     Running   0          4m13s
 
-NAME                              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-service/example-rstudio-service   NodePort   10.99.147.111   <none>        8787:30574/TCP   15s
+NAME                      TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
+service/example-rstudio   NodePort   10.109.56.60   <none>        8787:32378/TCP   4m13s
 
-NAME                                           READY   AGE
-statefulset.apps/example-rstudio-statefulset   1/1     15s
+NAME                               READY   AGE
+statefulset.apps/example-rstudio   1/1     4m13s
 ```
