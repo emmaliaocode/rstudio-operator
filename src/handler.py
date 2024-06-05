@@ -31,7 +31,7 @@ def create_fn(name: str, spec: Dict, namespace: str, logger: Logger, **_) -> Dic
     build_api_data: BuildApiData = BuildApiData(name=name, spec=spec)
     k8s_client = KubernetesClient()
 
-    tmpls: List = ["statefulset.yaml.j2", "service.yaml.j2", "secret.yaml.j2"]
+    tmpls: List = ["statefulset.yaml.j2", "service.yaml.j2"]
 
     api_data: Dict = {}
 
