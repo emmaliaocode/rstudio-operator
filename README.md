@@ -3,6 +3,8 @@
 ## Overview
 RStudio IDE is an integrated development environment for R widely used by data scientists. The RStudio Operator aims to make running an RStudio on Kubernetes easier by using Kubernetes custom resources.
 
+![](docs/imgs/arch.png)
+
 ## Installation
 Clone the repository and install with [Kustomize](https://kustomize.io/).
 ```
