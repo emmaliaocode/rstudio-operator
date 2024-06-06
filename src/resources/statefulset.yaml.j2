@@ -6,7 +6,7 @@ metadata:
     component: rstudio
     rstudio: {{ name }}
 spec:
-  serviceName: {{ name }}-rstudio-service
+  serviceName: {{ name }}-rstudio
   replicas: 1
   selector:
     matchLabels:
@@ -47,6 +47,7 @@ spec:
         - name: ROOT
           value: "{{ spec.isRoot | string | lower }}"
         volumeMounts: {{ spec.volumeMounts }}
+      volumes: {{ spec.volumes }}
   volumeClaimTemplates:
   {% for item in spec.storages %}
   - metadata:
@@ -62,5 +63,5 @@ spec:
       accessModes: {{ item.accessModes }}
   {% endfor %}
   persistentVolumeClaimRetentionPolicy:
-    whenDeleted: Delete
+    whenDeleted: Retain
     whenScaled: Retain

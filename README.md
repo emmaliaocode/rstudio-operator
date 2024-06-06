@@ -43,9 +43,15 @@ spec:
     storageSize: "1Gi"
     accessModes:
     - "ReadWriteMany"
+  volumes:
+  - name: parameters
+    configMap:
+      name: parameters-cm
   volumeMounts:
   - name: rstudio-pvc
     mountPath: /data
+  - name: parameters
+    mountPath: /params
 EOF
 ```
 ```bash
