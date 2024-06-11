@@ -38,14 +38,20 @@ spec:
             memory: {{ spec.resources.limits.memory }}
           {% endif %}
         {% endif %}
+        {% if spec.loginSecret or spec.isRoot %}
         env:
+        {% if spec.loginSecret %}
         - name: PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ spec.loginSecret }}
               key: password
+        {% endif %}
+        {% if spec.isRoot %}
         - name: ROOT
           value: "{{ spec.isRoot | string | lower }}"
+        {% endif %}
+        {% endif %}
         volumeMounts: {{ spec.volumeMounts }}
       volumes: {{ spec.volumes }}
   volumeClaimTemplates:
@@ -56,7 +62,9 @@ spec:
         component: rstudio
         rstudio: {{ name }}
     spec:
+      {% if item.storageClassName %}
       storageClassName: {{ item.storageClassName }}
+      {% endif %}
       resources:
         requests:
           storage: {{ item.storageSize }}

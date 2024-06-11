@@ -4,7 +4,7 @@ metadata:
   name: test
 spec:
   image: rocker/rstudio:4.4.0
-  imagePullPolicy: Always
+  imagePullPolicy: IfNotPresent
   loginSecret: rstudio-secret
   isRoot: true
   resources:
@@ -15,17 +15,32 @@ spec:
       cpu: "500m"
       memory: "128Mi"
   storages:
-  - name: rstudio-pvc
+  - name: my-storage
     storageClassName: standard
     storageSize: "1Gi"
     accessModes:
-    - "ReadWriteMany"
+    - ReadWriteMany
   volumes:
-  - name: parameters
+  - name: my-config
     configMap:
-      name: parameters-cm
+      name: my-config
+  - name: my-pvc
+    persistentVolumeClaim:
+      claimName: my-pvc
+  - name: my-secret
+    secret:
+      secretName: my-secret
+  - name: my-empty-dir
+    emptyDir:
+      sizeLimit: "1Gi"
   volumeMounts:
-  - name: rstudio-pvc
-    mountPath: /data
-  - name: parameters
-    mountPath: /params
+  - name: my-storage
+    mountPath: /storage
+  - name: my-config
+    mountPath: /config
+  - name: my-pvc
+    mountPath: /pvc
+  - name: my-secret
+    mountPath: /secret
+  - name: my-empty-dir
+    mountPath: /empty-dir

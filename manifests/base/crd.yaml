@@ -21,32 +21,32 @@ spec:
         type: object
         properties:
           spec:
-            description: "Defines the desired state of RStudio."
+            description: "Specification of the Rstudio instance."
             type: object
             properties:
               image:
-                description: "Image digest selected from DockerHub, the tag of the image refers to the R version."
+                description: "Image digest from Docker Hub (rocker/rstudio). Must start with the prefix rocker/rstudio and separate the R version with `:`. For example, `rocker/rstudio:4.4.0` creates an Rstudio of R version 4.4.0."
                 type: string
               imagePullPolicy:
-                description: "Policy of the Kubelet to pull an image, default is IfNotPresent."
+                description: "Image pull policy. One of `Always`, `Never`, `IfNotPresent`. Defaults to `Always` if the 'latest' tag is specified in image, or `IfNotPresent` otherwise."
                 type: string
-                default: IfNotPresent
                 enum:
                 - Always
                 - IfNotPresent
                 - Never
               loginSecret:
-                description: "Secret that contains a key 'password' for login to RStudio."
+                description: "Set the password for logining to Rstudio with a Secret, the secret must contain a `password` key. Default password will be printed in the container log if this is not set."
                 type: string
               isRoot:
-                description: "Whether the Linux system user `rstudio` should be added to the `sudoers` group during the RStudio server init process, default is False."
+                description: "Whether the Linux system user should be added to the sudoers group during the Rstudio server init process. Default is `false`."
                 type: boolean
+                default: false
               resources:
-                description: "Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/. ResourceRequirements describes the compute resource requirements."
+                description: "Compute Resources required by this Rstudio instance."
                 type: object
                 properties:
                   requests:
-                    description: "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/. Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64() accessors."
+                    description: "Requests describes the minimum amount of compute resources required."
                     type: object
                     properties:
                       cpu:
@@ -54,7 +54,7 @@ spec:
                       memory:
                         type: string
                   limits:
-                    description: "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/. Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64() accessors."
+                    description: "Limits describes the maximum amount of compute resources allowed."
                     type: object
                     properties:
                       cpu:
@@ -62,36 +62,44 @@ spec:
                       memory:
                         type: string
               storages:
-                description: "A list of claims that pods are allowed to reference. The StatefulSet controller is responsible for mapping network identities to claims in a way that maintains the identity of a pod. Every claim in this list must have at least one matching (by name) volumeMount."
+                description: "Storages are a list of claims that an Rstudio instance is allowed to reference."
                 type: array
                 items:
                   type: object
                   properties:
                     name:
-                      description: "The name of the claim."
+                      description: "Name of the claim."
                       type: string
                     storageClassName:
-                      description: "The name of the StorageClass required by the claim."
+                      description: "Name of the StorageClass required by the claim."
                       type: string
                     storageSize:
-                      description: "The minimum resources the volume should have."
+                      description: "StorageSize represents the minimum resources the volume should have."
                       type: string
                     accessModes:
-                      description: "The desired access modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1."
+                      description: "AccessModes contains the desired access modes the volume should have. Could be `ReadWriteOnce`, `ReadOnlyMany`, `ReadWriteMany`."
                       type: array
                       items:
                         type: string
+                        enum:
+                        - ReadWriteOnce
+                        - ReadOnlyMany
+                        - ReadWriteMany
+                  required:
+                  - name
+                  - storageSize
+                  - accessModes
               volumes:
-                description: "List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes. Volume represents a named volume in a pod that may be accessed by any container in the pod."
+                description: "Volumes that can be mounted to the Rstudio instance."
                 type: array
                 items:
                   type: object
                   properties:
                     name:
-                      description: "Name of the volume. Must be a DNS_LABEL and unique within the pod."
+                      description: "Name of the volume must be unique."
                       type: string
                     configMap:
-                      description: "ConfigMap represents a configMap that should populate this volume. Adapts a ConfigMap into a volume"
+                      description: "Mount a ConfigMap that already existed in the same namespace."
                       type: object
                       properties:
                         name:
@@ -114,6 +122,24 @@ spec:
                             - path
                       required:
                       - name
+                    persistentVolumeClaim:
+                      description: "Mount a PersistentVolumeClaim that already existed in the same namespace."
+                      type: object
+                      properties:
+                        claimName:
+                          description: "ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume."
+                          type: string
+                      required:
+                      - claimName
+                    secret:
+                      description: "Mount a Secret that already existed in the same namespace."
+                      type: object
+                      properties:
+                        secretName:
+                          description: "SecretName is the name of the secret in the pod's namespace to use."
+                          type: string
+                      required:
+                      - secretName
                     emptyDir:
                       description: "EmptyDir represents a temporary directory that shares a pod's lifetime."
                       type: object
@@ -124,7 +150,7 @@ spec:
                   required:
                   - name
               volumeMounts:
-                description: "Pod volumes to mount into the container's filesystem. Cannot be updated. VolumeMount describes a mounting of a Volume within a container."
+                description: "Volumes to mount into the container's filesystem."
                 type: array
                 items:
                   type: object
@@ -137,9 +163,11 @@ spec:
                       type: string
             required:
             - image
-            - isRoot
           status:
-            description: "Status and results of the rstudio resource."
+            description: "Most recently observed status of the Rstudio."
             x-kubernetes-preserve-unknown-fields: true
         required:
+        - apiVersion
+        - kind
+        - metadata
         - spec
