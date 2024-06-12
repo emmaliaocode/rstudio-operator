@@ -54,6 +54,7 @@ spec:
         {% endif %}
         volumeMounts: {{ spec.volumeMounts }}
       volumes: {{ spec.volumes }}
+  {% if spec.storages %}
   volumeClaimTemplates:
   {% for item in spec.storages %}
   - metadata:
@@ -73,3 +74,4 @@ spec:
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: Retain
     whenScaled: Retain
+  {% endif %}
