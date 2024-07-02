@@ -28,4 +28,4 @@ jobs:
         pip install -r src/requirements-dev.txt
     - name: Test with pytest
       run: |
-        pytest -k "not integtest"
+        pytest --cov=./ --cov-report=term-missing tests/ -k "not integtest"
