@@ -47,7 +47,7 @@ kustomize build manifests/base | kubectl apply -f -
           <tbody>
             <tr>
               <td><code>image</code><br/><em>string (Required.)</em></td>
-              <td>Image digest from <a herf="https://hub.dockercom/r/rocker/ rstudio/tags">Docker Hub (rocker/rstudio)</a>. Must start with the prefix rocker/rstudio and separate the R version with <code>:</code>. For example, <code>rocker/rstudio:4.4.0</code> creates an Rstudio of R version 4.4.0.</td>
+              <td>Image digest from <a herf="https://hub.docker.com/r/rocker/rstudio/tags">Docker Hub (rocker/rstudio)</a>. Must start with the prefix rocker/rstudio and separate the R version with <code>:</code>. For example, <code>rocker/rstudio:4.4.0</code> creates an Rstudio of R version 4.4.0.</td>
             </tr>
             <tr>
               <td><code>imagePullPolicy</code><br/><em>string</em></td>
